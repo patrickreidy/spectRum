@@ -1,0 +1,235 @@
+# Author:       Patrick Reidy
+# Email:        <patrick.francis.reidy@gmail.com>
+# Affiliations: The Ohio State University, Department of Linguistics
+# Date:         October 22, 2014
+
+
+
+################################################################################
+# Class definition                                              Spectrum class #
+################################################################################
+
+setClass(
+  Class = 'Spectrum',
+  contains = c(),
+  slots    = c(values   = 'numeric',
+               binWidth = 'numeric',
+               nyquist  = 'numeric')
+  )
+
+
+
+
+################################################################################
+# Methods                                                     Spectrum methods #
+################################################################################
+
+#############################################################################
+# @binWidth get-method                                             binWidth #
+#############################################################################
+
+# binWidth
+if (! isGeneric('binWidth'))
+  setGeneric(
+    name = 'binWidth',
+    def  = function(x) standardGeneric('binWidth'))
+
+setMethod(
+  f   = 'binWidth',
+  sig = c(x = 'Spectrum'),
+  def = function(x) x@binWidth)
+
+
+#############################################################################
+# Centroid frequency of a spectrum                                 centroid #
+#############################################################################
+
+# centroid
+if (! isGeneric('centroid'))
+  setGeneric(
+    name = 'centroid',
+    def  = function(x, ...) standardGeneric('centroid'))
+
+setMethod(
+  f   = 'centroid',
+  sig = c(x = 'Spectrum'),
+  def = function(x, minHz = 0, maxHz = Inf, scale = 'linear') {
+    .freqs <- frequencies(x)[which(minHz <= freq(x) & freq(x) <= maxHz)]
+    .vals  <- values(x)[which(minHz <= freq(x) & freq(x) <= maxHz)]
+    if (scale == 'dB' | scale == 'decibel')
+      .vals <- 10*log10(.vals/min(.vals))
+    sum(.freqs * (.vals/sum(.vals)))
+  })
+
+
+#############################################################################
+# Fourier frequencies of a spectrum                            fourierFreqs #
+#############################################################################
+
+# frequencies
+if (! isGeneric('frequencies'))
+  setGeneric(
+    name = 'frequencies',
+    def  = function(x) standardGeneric('frequencies'))
+
+setMethod(
+  f   = 'frequencies',
+  sig = c(x = 'Spectrum'),
+  def = function(x) 
+    seq(from = 0, by = binWidth(x), length.out = length(values(x))))
+
+# freq
+if (! isGeneric('freq'))
+  setGeneric(
+    name = 'freq',
+    def  = function(x) standardGeneric('freq'))
+
+setMethod(
+  f   = 'freq',
+  sig = c(x = 'Spectrum'),
+  def = function(x) frequencies(x))
+
+
+#############################################################################
+# Maximum amplitude                                           max amplitude #
+#############################################################################
+
+# maxAmp
+if (! isGeneric('maxAmp'))
+  setGeneric(
+    name = 'maxAmp',
+    def  = function(x, ...) standardGeneric('maxAmp'))
+
+setMethod(
+  f   = 'maxAmp',
+  sig = c(x = 'Spectrum'),
+  def = function(x, minHz = min(freq(x)), maxHz = max(freq(x)), scale = 'dB', reference = NULL) {
+    .vals <- values(x)
+    if (scale == 'dB') {
+      if (is.null(reference))
+        .vals <- 10*log10(.vals/max(.vals))
+      else if (reference == 'max')
+        .vals <- 10*log10(.vals/max(.vals))
+      else if (reference == 'min')
+        .vals <- 10*log10(.vals/min(.vals))
+      else if (is.numeric(reference))
+        .vals <- 10*log10(.vals/reference)
+      else
+        message('Reference power must be argument when using dB scale.')
+    }
+    .vals <- .vals[which(minHz <= frequencies(x) & frequencies(x) <= maxHz)]
+    return(max(.vals))
+  })
+
+
+#############################################################################
+# Minimum amplitude                                           min amplitude #
+#############################################################################
+
+# minAmp
+if (! isGeneric('minAmp'))
+  setGeneric(
+    name = 'minAmp',
+    def  = function(x, ...) standardGeneric('minAmp'))
+
+setMethod(
+  f   = 'minAmp',
+  sig = c(x = 'Spectrum'),
+  def = function(x, minHz = min(freq(x)), maxHz = max(freq(x)), scale = 'dB', reference = NULL) {
+    .vals <- values(x)
+    if (scale == 'dB') {
+      if (is.null(reference))
+        .vals <- 10*log10(.vals/max(.vals))
+      else if (reference == 'max')
+        .vals <- 10*log10(.vals/max(.vals))
+      else if (reference == 'min')
+        .vals <- 10*log10(.vals/min(.vals))
+      else if (is.numeric(reference))
+        .vals <- 10*log10(.vals/reference)
+      else
+        message('Reference power must be argument when using dB scale.')
+    }
+    .vals <- .vals[which(minHz <= frequencies(x) & frequencies(x) <= maxHz)]
+    return(min(.vals))
+  })
+
+
+#############################################################################
+# @nyquist get-method                                               nyquist #
+#############################################################################
+
+# nyquist
+if (! isGeneric('nyquist'))
+  setGeneric(
+    name = 'nyquist',
+    def  = function(x) standardGeneric('nyquist'))
+
+setMethod(
+  f   = 'nyquist',
+  sig = c(x = 'Spectrum'),
+  def = function(x) x@nyquist)
+
+
+#############################################################################
+# Peak Hz                                                           Peak Hz #
+#############################################################################
+
+# peakHz
+if (! isGeneric('peakHz'))
+  setGeneric(
+    name = 'peakHz',
+    def  = function(x, minHz, maxHz) standardGeneric('peakHz'))
+
+setMethod(
+  f   = 'peakHz',
+  sig = c(x = 'Spectrum', minHz = 'numeric', maxHz = 'numeric'),
+  def = function(x, minHz, maxHz) {
+    .inds <- which(minHz <= frequencies(x) & frequencies(x) <= maxHz)
+    .freq <- frequencies(x)[.inds]
+    .vals <- values(x)[.inds]
+    .freq[which.max(.vals)]
+  })
+
+#############################################################################
+#  show                                                                show #
+#############################################################################
+
+setMethod(
+  f   = 'show',
+  sig = c(object = 'Spectrum'),
+  def = function(object) {
+    .spec = data.frame(Frequency = frequencies(object),
+                       Amplitude = 10*log10(values(object)/max(values(object))))
+    print(
+      ggplot(data = .spec, aes(x = Frequency, y = Amplitude)) +
+        geom_path(colour = 'black') + theme_bw() +
+        xlab('Frequency (Hz)') + ylab('Amplitude (dB)')
+    )
+  })
+
+
+#############################################################################
+# @values get-method                                                 values #
+#############################################################################
+
+# values
+if (! isGeneric('values'))
+  setGeneric(
+    name = 'values',
+    def  = function(x) standardGeneric('values'))
+
+setMethod(
+  f   = 'values',
+  sig = c(x = 'Spectrum'),
+  def = function(x) x@values)
+
+# ordinates
+if (! isGeneric('ordinates'))
+  setGeneric(
+    name = 'ordinates',
+    def  = function(x) standardGeneric('ordinates'))
+
+setMethod(
+  f   = 'ordinates',
+  sig = c(x = 'Spectrum'),
+  def = function(x) values(x))
