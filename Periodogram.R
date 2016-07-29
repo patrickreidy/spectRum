@@ -1,10 +1,5 @@
-# Author:       Patrick Reidy
-# Email:        <patrick.francis.reidy@gmail.com>
-# Affiliations: The Ohio State University, Department of Linguistics
-# Date:         November 4, 2014
-# Purpose:      Define the Periodogram S4 class and methods for manipulating
-#               objects of that class.
-
+# Author: Patrick Reidy
+# Email:  <patrick.francis.reidy@gmail.com>
 
 
 

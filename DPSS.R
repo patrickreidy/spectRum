@@ -1,10 +1,7 @@
-# Author:       Patrick Reidy
-# Email:        <patrick.francis.reidy@gmail.com>
-# Affiliations: The Ohio State University, Department of Linguistics
-# Date:         October 22, 2014
-# Purpose:      Define the DPSS S4 class and methods for manipulating objects
-#               of that class.
-# Dependencies: multitaper
+# Author: Patrick Reidy
+# Email:  <patrick.francis.reidy@gmail.com>
+
+
 
 
 

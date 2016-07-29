@@ -1,17 +1,12 @@
-# Author:       Patrick Reidy
-# Email:        <patrick.francis.reidy@gmail.com>
-# Affiliations: The Ohio State University, Department of Linguistics
-# Date:         October 22, 2014
-# Purpose:      Define the Multitaper S4 class and methods for manipulating
-#               objects of that class.
-# Dependencies: multitaper
+# Author: Patrick Reidy
+# Email:  <patrick.francis.reidy@gmail.com>
+
+
 
 
 
 # Quietly load the dependencies.
 suppressPackageStartupMessages(library('multitaper'))
-
-
 
 
 
@@ -110,45 +105,6 @@ setMethod(
   f   = 'nw',
   sig = c(x = 'Multitaper'),
   def = function(x) x@nw)
-
-
-#############################################################################
-# Peak Hz                                                           Peak Hz #
-#############################################################################
-
-# peakHz
-if (! isGeneric('peakHz'))
-  setGeneric(
-    name = 'peakHz',
-    def  = function(x, minHz, maxHz) standardGeneric('peakHz'))
-
-setMethod(
-  f   = 'peakHz',
-  sig = c(x = 'Multitaper', minHz = 'numeric', maxHz = 'numeric'),
-  def = function(x, minHz, maxHz) {
-    .inds <- which(minHz <= frequencies(x) & frequencies(x) <= maxHz)
-    .freq <- frequencies(x)[.inds]
-    .vals <- values(x)[.inds]
-    .freq[which.max(.vals)]
-  })
-
-
-#############################################################################
-#  show                                                                show #
-#############################################################################
-
-setMethod(
-  f   = 'show',
-  sig = c(object = 'Multitaper'),
-  def = function(object) {
-    .spec = data.frame(Frequency = frequencies(object),
-                       Amplitude = 10*log10(values(object)/max(values(object))))
-    print(
-      ggplot(data = .spec, aes(x = Frequency, y = Amplitude)) +
-        geom_path(colour = 'black') + theme_bw() +
-        xlab('Frequency (Hz)') + ylab('Amplitude (dB)')
-    )
-  })
 
 
 #############################################################################
