@@ -1,7 +1,7 @@
-# Author:       Patrick Reidy
-# Email:        <patrick.francis.reidy@gmail.com>
-# Affiliations: The Ohio State University, Department of Linguistics
-# Date:         October 22, 2014
+# Author: Patrick Reidy
+# Email:  <patrick.francis.reidy@gmail.com>
+
+
 
 
 
@@ -61,6 +61,81 @@ setMethod(
     sum(.freqs * (.vals/sum(.vals)))
   })
 
+
+#############################################################################
+# Variance (second moment) of a spectrum                           variance #
+#############################################################################
+
+# variance
+if (! isGeneric('variance'))
+  setGeneric(
+    name = 'variance',
+    def  = function(x, ...) standardGeneric('variance')
+  )
+setMethod(
+  f   = 'variance',
+  sig = c(x = 'Spectrum'),
+  def = function(x, minHz = 0, maxHz = Inf, scale = 'linear') {
+    .inds  <- which(minHz <= frequencies(x) & frequencies(x) <= maxHz)
+    .freqs <- frequencies(x)[.inds]
+    .vals  <- values(x)[.inds]
+    if (tolower(scale) %in% c('db', 'decibel'))
+      .vals <- 10 * log10(.vals / min(.vals))
+    sum((.vals / sum(.vals)) * ((.freqs - centroid(x, minHz, maxHz, scale))^2))
+  }
+)
+
+
+#############################################################################
+# Skewness (third moment) of a spectrum                            skewness #
+#############################################################################
+
+# skewness
+if (! isGeneric('skewness'))
+  setGeneric(
+    name = 'skewness',
+    def  = function(x, ...) standardGeneric('skewness')
+  )
+setMethod(
+  f   = 'skewness',
+  sig = c(x = 'Spectrum'),
+  def = function(x, minHz = 0, maxHz = Inf, scale = 'linear') {
+    .inds  <- which(minHz <= frequencies(x) & frequencies(x) <= maxHz)
+    .freqs <- frequencies(x)[.inds]
+    .vals  <- values(x)[.inds]
+    if (tolower(scale) %in% c('db', 'decibel'))
+      .vals <- 10 * log10(.vals / min(.vals))
+    .top <- sum((.vals / sum(.vals)) * ((.freqs - centroid(x, minHz, maxHz, scale))^3))
+    .bottom <- variance(x, minHz, maxHz, scale)^(3/2)
+    .top / .bottom
+  }
+)
+
+
+#############################################################################
+# Kurtosis (fourth moment) of a spectrum                           kurtosis #
+#############################################################################
+
+# kurtosis
+if (! isGeneric('kurtosis'))
+  setGeneric(
+    name = 'kurtosis',
+    def  = function(x, ...) standardGeneric('kurtosis')
+  )
+setMethod(
+  f   = 'kurtosis',
+  sig = c(x = 'Spectrum'),
+  def = function(x, minHz = 0, maxHz = Inf, scale = 'linear', excess = FALSE) {
+    .inds  <- which(minHz <= frequencies(x) & frequencies(x) <= maxHz)
+    .freqs <- frequencies(x)[.inds]
+    .vals  <- values(x)[.inds]
+    if (tolower(scale) %in% c('db', 'decibel'))
+      .vals <- 10 * log10(.vals / min(.vals))
+    .top <- sum((.vals / sum(.vals)) * ((.freqs - centroid(x, minHz, maxHz, scale))^4))
+    .bottom <- variance(x, minHz, maxHz, scale)^2
+    (.top / .bottom) - ifelse(excess, yes = 3, no = 0)
+  }
+)
 
 #############################################################################
 # Fourier frequencies of a spectrum                            fourierFreqs #
@@ -171,24 +246,25 @@ setMethod(
 
 
 #############################################################################
-# Peak Hz                                                           Peak Hz #
+# Peak frequency of a spectrum                                       peakHz #
 #############################################################################
 
 # peakHz
 if (! isGeneric('peakHz'))
   setGeneric(
     name = 'peakHz',
-    def  = function(x, minHz, maxHz) standardGeneric('peakHz'))
+    def  = function(x, ...) standardGeneric('peakHz'))
 
 setMethod(
   f   = 'peakHz',
-  sig = c(x = 'Spectrum', minHz = 'numeric', maxHz = 'numeric'),
-  def = function(x, minHz, maxHz) {
+  sig = c(x = 'Spectrum'),
+  def = function(x, minHz = 0, maxHz = Inf) {
     .inds <- which(minHz <= frequencies(x) & frequencies(x) <= maxHz)
     .freq <- frequencies(x)[.inds]
     .vals <- values(x)[.inds]
     .freq[which.max(.vals)]
   })
+
 
 #############################################################################
 #  show                                                                show #
